@@ -56,8 +56,8 @@ if not LOCAL:
             'level': 'ERROR',
             'api_key': SLACK_SECRET_KEY,
             'class': 'slacker_log_handler.SlackerLogHandler',
-            'channel': '@vishal',
-            'username': 'e-commerce' + ENVIRON,
+            'channel': '#general',
+            'username': 'demo' + ENVIRON,
             # 'icon_url': '',
             # 'icon_emoji': '',
         }

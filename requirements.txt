@@ -1,3 +1,5 @@
 Django==1.11
 mysqlclient==1.3.13ipython
 ipython==6.4.0
+slacker==0.9.42
+slacker-log-handler==1.2.0

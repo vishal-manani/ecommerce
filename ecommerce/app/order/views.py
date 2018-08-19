@@ -1,12 +1,15 @@
 import json
 import decimal
 import datetime
+import logging
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import Order, OrderItem
 from django.forms.models import model_to_dict
+
+slack_logger = logging.getLogger('django.request')
 
 
 def myconverter(o):
@@ -57,6 +60,7 @@ class OrderView(View):
                 'order_id': order_id.id
             }
         except Exception as error:
+            slack_logger.error("Error while order create", exc_info=True)
             response = {
                 'status': 500,
                 'type': '-ERR',
@@ -85,6 +89,7 @@ class OrderUpdateView(View):
                 'message': 'Successfully Order Updated',
             }
         except Exception as error:
+            slack_logger.error("Error while order update", exc_info=True)
             response = {
                 'status': 500,
                 'type': '-ERR',
@@ -109,6 +114,7 @@ class OrderUpdateView(View):
                 }
 
         except Exception as error:
+            slack_logger.error("Error while order delete", exc_info=True)
             response = {
                 'status': 500,
                 'type': '-ERR',

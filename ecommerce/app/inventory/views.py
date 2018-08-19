@@ -4,6 +4,9 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import Product
 import json
+import logging
+
+slack_logger = logging.getLogger('django.request')
 
 
 class ProductView(View):
@@ -36,6 +39,7 @@ class ProductView(View):
                 'type': '-ERR',
                 'message': 'Internal Server Error',
             }
+            slack_logger.error("Error while product create", exc_info=True)
         return JsonResponse(response, status=response.get('status'))
 
 
@@ -60,6 +64,7 @@ class ProductUpdateView(View):
                 'type': '-ERR',
                 'message': 'Internal Server Error',
             }
+            slack_logger.error("Error while product create", exc_info=True)
         return JsonResponse(response, status=response.get('status'))
 
     def delete(self, request, pk):
@@ -83,4 +88,5 @@ class ProductUpdateView(View):
                         'type': '-ERR',
                         'message': 'Internal Server Error',
             }
+            slack_logger.error("Error while product delete", exc_info=True)
         return JsonResponse(response, status=response.get('status'))
