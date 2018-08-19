@@ -8,6 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import Order, OrderItem
 from django.forms.models import model_to_dict
 
+
 def myconverter(o):
     if isinstance(o, datetime.date):
         return o.__str__()
@@ -55,6 +56,58 @@ class OrderView(View):
                 'message': 'Successfully Order Create',
                 'order_id': order_id.id
             }
+        except Exception as error:
+            response = {
+                'status': 500,
+                'type': '-ERR',
+                'message': 'Internal Server Error',
+            }
+        return JsonResponse(response, status=response.get('status'))
+
+
+class OrderUpdateView(View):
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super(OrderUpdateView, self).dispatch(request, *args, **kwargs)
+
+    def put(self, request, pk):
+        try:
+            data = json.loads(request.body.decode("UTF-8"))
+            order_item = data.pop('order_item')
+            Order.objects.filter(id=pk).update(**data)
+            for item in order_item:
+                OrderItem.objects.filter(id=item['id']).update(quantity=item['quantity'], product=item['product'])
+
+            response = {
+                'status': 200,
+                'type': '+OK',
+                'message': 'Successfully Order Updated',
+            }
+        except Exception as error:
+            response = {
+                'status': 500,
+                'type': '-ERR',
+                'message': 'Internal Server Error',
+            }
+        return JsonResponse(response, status=response.get('status'))
+
+    def delete(self, request, pk):
+        try:
+            order_delete = Order.objects.filter(id=pk).delete()
+            if order_delete:
+                response = {
+                    'status': 200,
+                    'type': '+OK',
+                    'message': 'Successfully Order Deleted',
+                }
+            else:
+                response = {
+                    'status': 200,
+                    'type': '+OK',
+                    'message': 'Data not available in database',
+                }
+
         except Exception as error:
             response = {
                 'status': 500,
