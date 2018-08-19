@@ -5,8 +5,8 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import Order
-
+from .models import Order, OrderItem
+from django.forms.models import model_to_dict
 
 def myconverter(o):
     if isinstance(o, datetime.date):
@@ -26,20 +26,34 @@ class OrderView(View):
         order_list = list()
 
         for o in order_queryset:
-            order_list.append(o)
-
-        order_list = json.dumps(order_list, default=myconverter)
+            pd = model_to_dict(o)
+            pd['order_item'] = list()
+            for py in o.order_for_order_item.all():
+                pd['order_item'].append(model_to_dict(py))
+            order_list.append(pd)
 
         return JsonResponse(order_list, safe=False)
 
     def post(self, request):
         try:
             data = json.loads(request.body.decode("UTF-8"))
-            Order.objects.create(**data)
+            order_item = data.pop('order_item')
+
+            order_id = Order.objects.create(**data)
+
+            order_item_obj = [OrderItem(
+                order=order_id,
+                product_id=item.get('product'),
+                quantity=item.get('quantity')
+            ) for item in order_item]
+
+            OrderItem.objects.bulk_create(order_item_obj)
+
             response = {
                 'status': 200,
                 'type': '+OK',
-                'message': 'Successfully Order data recorded',
+                'message': 'Successfully Order Create',
+                'order_id': order_id.id
             }
         except Exception as error:
             response = {
